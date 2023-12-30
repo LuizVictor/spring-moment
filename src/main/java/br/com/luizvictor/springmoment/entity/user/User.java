@@ -1,6 +1,7 @@
 package br.com.luizvictor.springmoment.entity.user;
 
 import jakarta.persistence.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Objects;
 
@@ -13,12 +14,18 @@ public class User {
     private String name;
     private String email;
     private String password;
+    private String role;
 
     public User(Long id, String name, String email, String password) {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.password = password;
+        this.password = new BCryptPasswordEncoder().encode(password);
+        this.role = "USER";
+    }
+
+    public User() {
+
     }
 
     public Long getId() {
@@ -35,6 +42,10 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getRole() {
+        return role;
     }
 
     @Override

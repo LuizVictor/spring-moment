@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -51,6 +52,14 @@ public class ImageService {
         );
 
         return new ImageDetailsDto(image);
+    }
+
+    public List<ImageDetailsDto> findAll(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new EntityNotFoundException("Image not found")
+        );
+
+        return imageRepository.findAllImages(user.getId()).stream().map(ImageDetailsDto::new).toList();
     }
 
     private String saveImageOnDisk(MultipartFile file, String path) throws IOException {

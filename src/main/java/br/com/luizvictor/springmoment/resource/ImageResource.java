@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 public class ImageResource {
@@ -21,6 +22,12 @@ public class ImageResource {
     public ResponseEntity<ImageDetailsDto> save(@RequestParam("file") MultipartFile file, Principal principal) {
         ImageDetailsDto details = service.save(file, principal.getName());
         return ResponseEntity.created(URI.create("/image/" + details.id())).body(details);
+    }
+
+    @GetMapping("/images")
+    public ResponseEntity<List<ImageDetailsDto>> findAll(Principal principal) {
+        List<ImageDetailsDto> details = service.findAll(principal.getName());
+        return ResponseEntity.ok(details);
     }
 
     @GetMapping("/image/{id}")

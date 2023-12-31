@@ -7,6 +7,7 @@ import br.com.luizvictor.springmoment.repository.ImageRepository;
 import br.com.luizvictor.springmoment.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -25,9 +26,9 @@ public class ImageService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public ImageDetailsDto save(MultipartFile file, String email) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new EntityNotFoundException("User not found"));
-        System.out.println(file);
         try {
             Image image = new Image(
                     UUID.randomUUID(),
@@ -44,9 +45,18 @@ public class ImageService {
         }
     }
 
+    public ImageDetailsDto findById(String id) {
+        Image image = imageRepository.findById(UUID.fromString(id)).orElseThrow(
+                () -> new EntityNotFoundException("Image not found")
+        );
+
+        return new ImageDetailsDto(image);
+    }
+
     private String saveImageOnDisk(MultipartFile file, String path) throws IOException {
         Path filePath = Paths.get(path, file.getOriginalFilename());
         Files.write(filePath, file.getBytes());
         return filePath.toString();
     }
+
 }

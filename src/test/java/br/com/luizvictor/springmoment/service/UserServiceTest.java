@@ -1,9 +1,8 @@
-package br.com.luizvictor.springmoment.resource;
+package br.com.luizvictor.springmoment.service;
 
 import br.com.luizvictor.springmoment.entity.user.User;
 import br.com.luizvictor.springmoment.entity.user.dto.UserDto;
 import br.com.luizvictor.springmoment.repository.UserRepository;
-import br.com.luizvictor.springmoment.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,7 +14,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserResourceTest {
+class UserServiceTest {
     @InjectMocks
     private UserService service;
     @Mock

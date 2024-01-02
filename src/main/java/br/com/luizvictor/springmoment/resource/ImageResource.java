@@ -1,5 +1,6 @@
 package br.com.luizvictor.springmoment.resource;
 
+import br.com.luizvictor.springmoment.entity.image.dto.ImageAlbumDto;
 import br.com.luizvictor.springmoment.entity.image.dto.ImageDetailsDto;
 import br.com.luizvictor.springmoment.service.ImageService;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,12 @@ public class ImageResource {
     @GetMapping("/image/{id}")
     public ResponseEntity<ImageDetailsDto> findById(@PathVariable String id) {
         ImageDetailsDto details = service.findById(id);
+        return ResponseEntity.ok(details);
+    }
+
+    @PutMapping("move-to-album")
+    public ResponseEntity<ImageDetailsDto> moveToAlbum(@RequestBody ImageAlbumDto dto) {
+        ImageDetailsDto details = service.moveToAlbum(dto);
         return ResponseEntity.ok(details);
     }
 }

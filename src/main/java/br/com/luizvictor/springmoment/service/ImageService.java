@@ -1,11 +1,14 @@
 package br.com.luizvictor.springmoment.service;
 
 import br.com.luizvictor.springmoment.entity.image.Image;
+import br.com.luizvictor.springmoment.entity.image.dto.ImageAlbumDto;
 import br.com.luizvictor.springmoment.entity.image.dto.ImageDetailsDto;
 import br.com.luizvictor.springmoment.entity.user.User;
 import br.com.luizvictor.springmoment.repository.ImageRepository;
 import br.com.luizvictor.springmoment.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,10 +20,13 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 @Service
 public class ImageService {
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
+    private final Logger logger = LoggerFactory.getLogger(ImageService.class);
 
     public ImageService(ImageRepository repository, UserRepository userRepository) {
         this.imageRepository = repository;
@@ -62,10 +68,50 @@ public class ImageService {
         return imageRepository.findAllImages(user.getId()).stream().map(ImageDetailsDto::new).toList();
     }
 
+    public ImageDetailsDto moveToAlbum(ImageAlbumDto album) {
+        Image image = imageRepository.findById(UUID.fromString(album.imageId())).orElseThrow(
+                () -> new EntityNotFoundException("Image not found")
+        );
+
+        String albumPath = moveImage(Paths.get(image.getPath()), image.getName(), album.albumName());
+        image.updatePath(albumPath, album.albumName());
+
+        return new ImageDetailsDto(imageRepository.save(image));
+    }
+
+    private String moveImage(Path currentPath, String imageName, String album) {
+        Path albumDir = Paths.get(currentPath.toString(), album);
+        Path target = Paths.get(currentPath.toString(), imageName);
+        Path source = Paths.get(albumDir.toString(), imageName);
+
+        if (!Files.exists(albumDir)) {
+            createAlbum(albumDir);
+        }
+
+        try {
+            logger.info("Moving file  from %s to album %s".formatted(currentPath, albumDir));
+            Files.move(target, source, REPLACE_EXISTING);
+
+            return albumDir.toString();
+        } catch (IOException e) {
+            logger.error("Couldn't move file to album");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void createAlbum(Path path) {
+        try {
+            logger.info("Creating album %s".formatted(path));
+            Files.createDirectory(path);
+        } catch (IOException e) {
+            logger.error("Couldn't move file to album");
+            throw new RuntimeException("Couldn't create album");
+        }
+    }
+
     private String saveImageOnDisk(MultipartFile file, String path) throws IOException {
         Path filePath = Paths.get(path, file.getOriginalFilename());
         Files.write(filePath, file.getBytes());
-        return filePath.toString();
+        return path;
     }
-
 }

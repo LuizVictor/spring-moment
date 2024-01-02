@@ -18,6 +18,7 @@ public class Image {
     private String path;
     @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private User owner;
+    private String album;
 
     public Image(UUID id, String name, long size, String format, String path, User owner) {
         this.id = id;
@@ -54,6 +55,15 @@ public class Image {
 
     public User getOwner() {
         return owner;
+    }
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public void updatePath(String albumPath, String albumName) {
+        this.path = albumPath;
+        album = albumName;
     }
 
     @Override

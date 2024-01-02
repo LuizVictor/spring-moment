@@ -21,6 +21,9 @@ public class ImageResource {
 
     @PostMapping("/uploads")
     public ResponseEntity<ImageDetailsDto> save(@RequestParam("file") MultipartFile file, Principal principal) {
+        if (!file.getContentType().startsWith("image/")) {
+           return ResponseEntity.badRequest().build();
+        }
         ImageDetailsDto details = service.save(file, principal.getName());
         return ResponseEntity.created(URI.create("/image/" + details.id())).body(details);
     }

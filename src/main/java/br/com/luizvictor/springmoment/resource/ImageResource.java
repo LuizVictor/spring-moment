@@ -42,4 +42,10 @@ public class ImageResource {
         ImageDetailsDto details = service.moveToAlbum(dto);
         return ResponseEntity.ok(details);
     }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        service.deteteImage(id);
+        return ResponseEntity.noContent().build();
+    }
 }

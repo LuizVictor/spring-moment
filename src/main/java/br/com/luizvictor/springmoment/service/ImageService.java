@@ -52,6 +52,12 @@ public class ImageService {
         }
     }
 
+    private String saveImageOnDisk(MultipartFile file, String path) throws IOException {
+        Path filePath = Paths.get(path, file.getOriginalFilename());
+        Files.write(filePath, file.getBytes());
+        return path;
+    }
+
     public ImageDetailsDto findById(String id) {
         Image image = imageRepository.findById(UUID.fromString(id)).orElseThrow(
                 () -> new EntityNotFoundException("Image not found")
@@ -68,6 +74,7 @@ public class ImageService {
         return imageRepository.findAllImages(user.getId()).stream().map(ImageDetailsDto::new).toList();
     }
 
+    @Transactional
     public ImageDetailsDto moveToAlbum(ImageAlbumDto album) {
         Image image = imageRepository.findById(UUID.fromString(album.imageId())).orElseThrow(
                 () -> new EntityNotFoundException("Image not found")
@@ -89,7 +96,7 @@ public class ImageService {
         }
 
         try {
-            logger.info("Moving file  from %s to album %s".formatted(currentPath, albumDir));
+            logger.info("Moving file  from {} to album {}", currentPath, albumDir);
             Files.move(target, source, REPLACE_EXISTING);
 
             return albumDir.toString();
@@ -101,17 +108,25 @@ public class ImageService {
 
     private void createAlbum(Path path) {
         try {
-            logger.info("Creating album %s".formatted(path));
+            logger.info("Creating album {}", path);
             Files.createDirectory(path);
         } catch (IOException e) {
-            logger.error("Couldn't move file to album");
-            throw new RuntimeException("Couldn't create album");
+            logger.error("Couldn't create album");
+            throw new RuntimeException(e);
         }
     }
 
-    private String saveImageOnDisk(MultipartFile file, String path) throws IOException {
-        Path filePath = Paths.get(path, file.getOriginalFilename());
-        Files.write(filePath, file.getBytes());
-        return path;
+    @Transactional
+    public void deteteImage(String id) {
+        try {
+            logger.info("Deleting image: %s".formatted(id));
+            Image imagePath = imageRepository.getReferenceById(UUID.fromString(id));
+            imageRepository.deleteById(UUID.fromString(id));
+
+            Files.delete(Paths.get(imagePath.getPath(), imagePath.getName()));
+        } catch (Exception e) {
+            logger.error("Couldn't delete image: {}", id);
+            throw new RuntimeException(e);
+        }
     }
 }

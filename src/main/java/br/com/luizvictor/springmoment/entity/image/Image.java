@@ -16,7 +16,7 @@ public class Image {
     private long size;
     private String format;
     private String path;
-    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private User owner;
     private String album;
 
